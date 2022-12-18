@@ -9,9 +9,9 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Get('profile')
     profile(
-        @Req() request
+        @Req() request: any
     ) {
-        return this.userService.findUserById(request.jwtAuthUser.userId);
+        return { userId: request.jwtAuthUser.userId }
     }
 
 }

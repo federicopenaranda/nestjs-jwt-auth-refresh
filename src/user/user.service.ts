@@ -7,39 +7,45 @@ export class UserService {
     private users: User[] = [
         {
             userId: 1,
-            name: 'Adam1',
-            email: 'adam1@gmail.com',
+            name: 'user1',
+            email: 'user1@gmail.com',
             password: '123456'
         },
         {
             userId: 2,
-            name: 'Adam2',
-            email: 'adam2@gmail.com',
+            name: 'user2',
+            email: 'user2@gmail.com',
             password: '123456'
         },
         {
             userId: 3,
-            name: 'Adam3',
-            email: 'adam3@gmail.com',
+            name: 'user3',
+            email: 'user3@gmail.com',
             password: '123456'
         },
         {
             userId: 4,
-            name: 'Adam4',
-            email: 'adam4@gmail.com',
+            name: 'user4',
+            email: 'user4@gmail.com',
+            password: '123456'
+        },
+        {
+            userId: 5,
+            name: 'user5',
+            email: 'user5@gmail.com',
             password: '123456'
         }
     ];
 
-    findUserByEmail(email: string): User {
-        const user = this.users.find( (user) => user.email === email );
-        if (!user) throw new Error('User not found.');
+    findUserById(userId: number): User {
+        const user = this.users.find( (user) => user.userId === userId );
+        if (!user) throw new Error('User not found');
         return user;
     }
 
-    findUserById(userId: number): User {
-        const user = this.users.find( (user) => user.userId === userId );
-        if (!user) throw new Error('User not found.');
+    findUserByEmail(email: string): User {
+        const user = this.users.find( (user) => user.email === email );
+        if (!user) throw new Error('User not found');
         return user;
     }
 

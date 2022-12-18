@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { sign, verify } from 'jsonwebtoken';
 import { UserService } from 'src/user/user.service';
+import { RefreshJwt } from './entities/refresh-jwt.entity';
 
-type JwtResponse = { accessToken: string, refreshToken: string };
-type RefreshToken = { refreshTokenId: number, userId: number };
+type LoginResponse = { accessToken: string, refreshToken: string };
 type AccessPayload = { userId: number };
 type RefreshPayload = { refreshTokenId: number, userId: number };
 
 @Injectable()
 export class AuthService {
 
-    private refreshTokens: RefreshToken[] = [];
+    private refreshTokens: RefreshJwt[] = [];
 
     constructor(private readonly userService: UserService) {}
 
-    // Validate email and password, and return access and refresh tokens.
-    login(email: string, password: string): JwtResponse {
+    login(email: string, password: string): LoginResponse {
         try {
 
+            // 1) Validate user creds
             const user = this.userService.findUserByEmail(email);
             if ( user.password !== password ) throw new Error('Wrong password!');
 
+            // 2) create access and refresh payloads to sign with JWT
             const accessPayload: AccessPayload = {
                 userId: user.userId
             };
@@ -29,8 +30,10 @@ export class AuthService {
                 userId: user.userId
             };
 
+            // 3) Save created refresh token
             this.refreshTokens.push(refreshPayload);
 
+            // 4) Sign and return tokens
             return {
                 accessToken: sign(
                     accessPayload,
@@ -42,22 +45,25 @@ export class AuthService {
                     process.env.JWT_REFRESH_SECRET,
                     { expiresIn: '1h' }
                 )
-            };
+            }
 
         } catch(e) {
-            throw e;
+            throw e.message;
         }
     }
 
-    // Validates refresh token and returns a new access token
-    refresh(refreshToken: string): Omit<JwtResponse, 'refreshToken'> {
+
+    refresh(refreshToken: string): Omit<LoginResponse, 'refreshToken'> {
         try {
-            const validRefreshToken = this.validateRefreshToken(refreshToken);
-            this.userService.findUserById(validRefreshToken.userId);
+
+            const decodedRefresh = verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+            if ( typeof decodedRefresh === 'string' ) throw new Error('Invalid Refresh Token.');
+
+            this.userService.findUserById(decodedRefresh.userId);
 
             const accessPayload: AccessPayload = {
-                userId: validRefreshToken.userId
-            };
+                userId: decodedRefresh.userId
+            }
 
             return {
                 accessToken: sign(
@@ -73,42 +79,31 @@ export class AuthService {
     }
 
 
-    // Validates refresh token and removes it from array
     logout(refreshToken: string): string {
         try {
-            const validRefreshToken = this.validateRefreshToken(refreshToken);
-            this.userService.findUserById(validRefreshToken.userId);
-            this.refreshTokens = this.refreshTokens.filter(
-                (token) => token.refreshTokenId !== validRefreshToken.refreshTokenId
-            );
-            return 'Logout successfull!';
+
+            const decodedRefresh = verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+            if ( typeof decodedRefresh === 'string' ) throw new Error('Invalid Refresh JWT');
+
+            this.userService.findUserById(decodedRefresh.userId);
+
+            this.refreshTokens = this.refreshTokens.filter( (token: RefreshJwt) => token.userId !== decodedRefresh.userId );
+            return 'Logout successfull.'
+
         } catch(e) {
             throw e;
         }
     }
 
 
-    validateRefreshToken(refreshToken: string): RefreshToken {
-        try {
-            const decodedToken = verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-            if ( typeof decodedToken === 'string' ) throw new Error('Invalid Refresh Token.');
-            const foundRefreshToken = this.refreshTokens.find( (token) => token.refreshTokenId === decodedToken.refreshTokenId );
-            if ( !foundRefreshToken ) throw new Error('Refresh Token not found');
-            return foundRefreshToken;
-        } catch(e) {
-            throw e;
-        }
+    showTokens() {
+        return this.refreshTokens
     }
 
 
-    getNextRefreshTokenId() {
+    getNextRefreshTokenId(): number {
         if ( this.refreshTokens.length === 0 ) return 1;
-        return Math.max.apply( null, this.refreshTokens.map( (token) => token.refreshTokenId ) ) + 1;
-    }
-
-
-    showRefreshTokens() {
-        return this.refreshTokens;
+        return Math.max.apply( null, this.refreshTokens.map( (token: RefreshPayload) => token.refreshTokenId ) );
     }
 
 }

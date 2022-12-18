@@ -1,76 +1,73 @@
-# Kata: NestJS JWT Access and Refresh token
-## Kata solution for creating a NestJS project and add authentication with JWT (access and refresh token).
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+</p>
 
-### Warning: This is a work in progress, I will complete these steps to make them a complete tutorial to follow.
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-**Goal:** Create a NestJS API that Authenticates users and return an Access and Refresh token, then uses the Access Token to access restricted API points, and uses the Refresh Token to renew the Access Token.
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-**First Repetition:** 2 hours
-**Number of Repetitions:** 7
-**Last Repetition:** 35 minutes
+## Description
 
-## Steps
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## 1. Project Creation, packages installation and basic configuration
-Create new NestJS project
-Install class-validator and class-transformer
-Add global validationPipe ( app.useGlobalPipes(new ValidationPipe()); )
-Install @nestjs/config
-Create .env file and add the secrets
-Generate access secret and refresh secret (https://randomkeygen.com/)
-Add config module to app module: ConfigModule.forRoot()
+## Installation
 
-Painpoint: ConfigModule reads the .env file from the root of the project folder as a default.
+```bash
+$ npm install
+```
 
-Extra task: Create an env folder and create 3 .env files for 3 environments: local, test and production, configure ConfigModule accordingly.
+## Running the app
 
-## 2. Install Needed Packages
-Install jsonwebtoken (npm i jsonwebtoken)
-Install @types/jsonwebtoken (npm i -D @types/jsonwebtoken)
-Install passport-jwt (npm i passport-jwt)
-Install Dev Dep @types/passport-jwt  (npm i -D @types/passport-jwt)
-Install @nestjs/passport
+```bash
+# development
+$ npm run start
 
-## 3. Create Resources
-Generate 2 resources “user” and “auth”
-Create User entity with fields: userId, name, email, password
-Create RefreshJwt  entity with fields: refreshTokenId, userId
-Create static users in user.service
-Create findUserByEmail, and findUserById methods
-Export userService in users module and import UserModule into AuthModule
+# watch mode
+$ npm run start:dev
 
-## 4. Create API endpoints and DTOs
-Painpoint: VSCode not recognizing import tags. Solución: ctrl + shift + p > Typescript: Restart TS Server.
+# production mode
+$ npm run start:prod
+```
 
-Auth Controller:
-- POST: login → Create DTO with fields: email and password
-- POST: refresh → Create DTO refreshToken with field: refreshToken
-- DELETE: logout  → Use DTO refreshToken
-- GET: showTokens
+## Test
 
-User Controller:
-- GET: profile (will be protected)
+```bash
+# unit tests
+$ npm run test
 
+# e2e tests
+$ npm run test:e2e
 
-## 5. Create JWT Logic
-Create refreshTokens array to store refresh tokens.
+# test coverage
+$ npm run test:cov
+```
 
-Methods in (auth.service):
-- login
-- refresh
-- showTokens
-- logout
-- getNextRefreshTokenIndex
-- verifyRefreshToken
+## Support
 
-Create login method in authService: email and password params, find user by email, check if password is correct, create refreshPayload and accessPayload, add refreshToken to array, sign them and return.
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## 6. Create JWT guard
-Create strategies folder
-Create jwt.strategy.ts and extend from passport-jwt class
-Create constructor and validate method
-Add decorator @UseGuards(JwtAuthGuard) to the protected api point
+## Stay in touch
 
-**Extra:** Override the property name the strategy adds to the request when validating the access token, and use it in the “profile” API point of the user controller (instead of the “user” property).
+- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-**Extra:** Add user email to the access token data in jwt strategy file.
+## License
+
+Nest is [MIT licensed](LICENSE).
